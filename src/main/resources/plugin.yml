@@ -1,0 +1,9 @@
+name: WLAnarchy
+version: 1.0
+main: me.alexxxychep.wlanarchy.WLAnarchy
+author: Alexxxychep
+api-version: '1.21'
+commands:
+  getrank:
+
+  setrank:

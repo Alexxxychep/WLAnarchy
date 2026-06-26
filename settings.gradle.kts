@@ -1,1 +1,1 @@
-rootProject.name = "WLPluginBase"
+rootProject.name = "WLAnarchy"
