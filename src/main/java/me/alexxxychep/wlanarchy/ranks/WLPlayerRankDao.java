@@ -75,6 +75,4 @@ public class WLPlayerRankDao {
             throw new RuntimeException(e);
         }
     }
-
-
 }

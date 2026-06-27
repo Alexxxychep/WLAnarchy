@@ -1,6 +1,7 @@
 package me.alexxxychep.wlanarchy.listeners;
 
-import me.alexxxychep.wlanarchy.WLAnarchy;
+import com.google.inject.Inject;
+import me.alexxxychep.wlanarchy.database.DatabaseService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.EventHandler;
@@ -10,14 +11,16 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 
 public class PlayerJoinListener implements Listener {
+    public DatabaseService databaseService;
 
-    public PlayerJoinListener() {
-
+    @Inject
+    public PlayerJoinListener(DatabaseService databaseService) {
+        this.databaseService = databaseService;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(AsyncPlayerPreLoginEvent event) {
-        if(!WLAnarchy.getDatabasePool().isReady()) {
+        if(!databaseService.isReady()) {
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text("Сервер не подключенг к датабазе").color(NamedTextColor.RED));
         }
     }

@@ -1,21 +1,35 @@
 package me.alexxxychep.wlanarchy.database;
 
+import com.google.inject.Inject;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.inject.Singleton;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
-public class DatabasePool {
+@Singleton
+public class DatabaseService {
     private HikariDataSource dataSource;
     private boolean ready = false;
     private boolean credentialsValid = false;
+    private final JavaPlugin javaPlugin;
+    private final ExecutorService executorService;
 
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final Logger logger;
+
+    @Inject
+    public DatabaseService(JavaPlugin javaPlugin, Logger logger) {
+        this.javaPlugin = javaPlugin;
+        this.logger = logger;
+        executorService = Executors.newCachedThreadPool();
+    }
 
     public void init() {
         if (ready) {

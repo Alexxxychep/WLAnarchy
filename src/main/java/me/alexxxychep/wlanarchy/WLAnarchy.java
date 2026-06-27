@@ -1,28 +1,28 @@
 package me.alexxxychep.wlanarchy;
 
-import me.alexxxychep.wlanarchy.database.DatabasePool;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import me.alexxxychep.wlanarchy.database.DatabaseService;
+import me.alexxxychep.wlanarchy.inject.InjectorModule;
 import me.alexxxychep.wlanarchy.listeners.PlayerJoinListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 
 public class WLAnarchy extends JavaPlugin {
-    private static final DatabasePool databasePool = new DatabasePool();
-
+    private Injector injector;
 
     @Override
     public void onEnable() {
-        databasePool.init();
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
-        getCommand("setrank").setExecutor(new SetRankCommand());
-        getCommand("getrank").setExecutor(new GetRankCommand());
+        injector = Guice.createInjector(new InjectorModule(this));
+        injector.getInstance(DatabaseService.class).init();
+        getServer().getPluginManager().registerEvents(injector.getInstance(PlayerJoinListener.class), this);
+        getCommand("setrank").setExecutor(injector.getInstance(SetRankCommand.class));
+        getCommand("getrank").setExecutor(injector.getInstance(GetRankCommand.class));
     }
 
     @Override
     public void onDisable() {
-        databasePool.closePool();
+        injector.getInstance(DatabaseService.class).closePool();
     }
 
-    public static DatabasePool getDatabasePool() {
-        return databasePool;
-    }
 }
