@@ -5,8 +5,7 @@ import com.google.inject.Singleton;
 import me.alexxxychep.wlanarchy.WLAnarchy;
 import me.alexxxychep.wlanarchy.database.DatabaseService;
 import me.alexxxychep.wlanarchy.ranks.RankService;
-
-import java.util.logging.Logger;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class InjectorModule extends AbstractModule {
     private final WLAnarchy plugin;
@@ -20,7 +19,6 @@ public class InjectorModule extends AbstractModule {
         bind(WLAnarchy.class).toInstance(plugin);
         bind(DatabaseService.class).in(Singleton.class);
         bind(RankService.class).in(Singleton.class);
-        bind(Logger.class).toInstance(plugin.getLogger());
-        
+        bind(JavaPlugin.class).toInstance(plugin);
     }
 }

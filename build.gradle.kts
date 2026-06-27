@@ -30,8 +30,9 @@ dependencies {
     paperweight.paperDevBundle("1.21.10-R0.1-SNAPSHOT")
     implementation("mysql:mysql-connector-java:8.0.33")
     implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("com.google.inject:guice:5.1.0")
-    implementation("com.google.inject.extensions:guice-assistedinject:5.1.0")
+    implementation("com.google.inject:guice:7.0.0")
+    implementation("com.google.inject.extensions:guice-assistedinject:7.0.0")
+    implementation("javax.inject:javax.inject:1")
 }
 
 
@@ -43,6 +44,9 @@ tasks {
 
         relocate("com.zaxxer.hikari", "me.alexxxychep.libs.hikari")
         relocate("com.mysql", "me.alexxxychep.libs.mysql")
+        relocate("com.google.inject", "me.alexxxychep.libs.inject")
+        relocate("com.google.common", "me.alexxxychep.libs.guava")
+        relocate("javax.inject", "me.alexxxychep.libs.javax.inject")
 
         exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
 
@@ -56,7 +60,6 @@ tasks {
     }
 
     reobfJar {
-        // Указываем paperweight, что переобфусцировать нужно именно shadowJar со всеми библиотеками
         inputJar.set(shadowJar.flatMap { it.archiveFile })
     }
     javadoc {

@@ -3,50 +3,37 @@ package me.alexxxychep.wlanarchy.database;
 import com.google.inject.Inject;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.bukkit.plugin.java.JavaPlugin;
+import me.alexxxychep.wlanarchy.WLAnarchy;
 
 import javax.inject.Singleton;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 @Singleton
 public class DatabaseService {
     private HikariDataSource dataSource;
-    private boolean ready = false;
-    private boolean credentialsValid = false;
-    private final JavaPlugin javaPlugin;
-    private final ExecutorService executorService;
+    private final WLAnarchy wlAnarchy;
 
     private final Logger logger;
 
     @Inject
-    public DatabaseService(JavaPlugin javaPlugin, Logger logger) {
-        this.javaPlugin = javaPlugin;
+    public DatabaseService(WLAnarchy wlAnarchy, Logger logger) {
+        this.wlAnarchy = wlAnarchy;
         this.logger = logger;
-        executorService = Executors.newCachedThreadPool();
+        initDataSource();
     }
 
-    public void init() {
-        if (ready) {
-            return;
-        }
-
-        if(!DatabaseCredentialHandler.areCredentialsValid()) {
-            credentialsValid = false;
-            return;
-        }
-        credentialsValid = true;
+    public void initDataSource() {
         dataSource = new HikariDataSource(getHikariConfig());
-        ready = true;
         try {
             initRankTable();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            logger.severe("Database failed to init database schema \n" + e.getMessage());
+            throw new DatabaseInitializationException("Failed to initialize database schema \n" + e.getMessage());
         }
     }
 
@@ -84,12 +71,9 @@ public class DatabaseService {
         }
     }
 
-    public boolean isCredentialsValid() {
-        return credentialsValid;
-    }
 
     public boolean isReady() {
-        return ready && dataSource != null && !dataSource.isClosed();
+        return dataSource != null && !dataSource.isClosed();
     }
 
     public Connection getConnection() throws SQLException {
@@ -99,7 +83,6 @@ public class DatabaseService {
     public synchronized void closePool() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
-            ready = false;
         }
     }
 }

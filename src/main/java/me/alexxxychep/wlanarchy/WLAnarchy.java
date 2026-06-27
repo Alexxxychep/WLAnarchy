@@ -14,7 +14,7 @@ public class WLAnarchy extends JavaPlugin {
     @Override
     public void onEnable() {
         injector = Guice.createInjector(new InjectorModule(this));
-        injector.getInstance(DatabaseService.class).init();
+        injector.getInstance(DatabaseService.class);
         getServer().getPluginManager().registerEvents(injector.getInstance(PlayerJoinListener.class), this);
         getCommand("setrank").setExecutor(injector.getInstance(SetRankCommand.class));
         getCommand("getrank").setExecutor(injector.getInstance(GetRankCommand.class));
@@ -24,5 +24,6 @@ public class WLAnarchy extends JavaPlugin {
     public void onDisable() {
         injector.getInstance(DatabaseService.class).closePool();
     }
+
 
 }
