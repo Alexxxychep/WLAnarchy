@@ -4,56 +4,165 @@ import com.google.inject.Inject;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import me.alexxxychep.wlanarchy.WLAnarchy;
+import me.alexxxychep.wlanarchy.listeners.PlayerJoinBlocker;
 
 import javax.inject.Singleton;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Singleton
 public class DatabaseService {
-    private HikariDataSource dataSource;
-    private final WLAnarchy wlAnarchy;
+    private static final int MAX_RETRIES = 5;
+    private static final long INITIAL_RETRY_DELAY_MS = 1000;
+    private static final long MAX_RETRY_DELAY_MS = 30000;
+    private static final int CONNECTION_TEST_TIMEOUT_SECONDS = 5;
 
+    private final WLAnarchy wlAnarchy;
     private final Logger logger;
+    private final PlayerJoinBlocker playerJoinBlocker;
+    private HikariDataSource dataSource;
+    private final DatabaseCredentialsHandler databaseCredentialsHandler;
+
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private final AtomicBoolean shuttingDown = new AtomicBoolean(false);
 
     @Inject
-    public DatabaseService(WLAnarchy wlAnarchy, Logger logger) {
+    public DatabaseService(WLAnarchy wlAnarchy, Logger logger, PlayerJoinBlocker playerJoinBlocker, DatabaseCredentialsHandler databaseCredentialsHandler) {
         this.wlAnarchy = wlAnarchy;
         this.logger = logger;
-        initDataSource();
+        this.playerJoinBlocker = playerJoinBlocker;
+        this.databaseCredentialsHandler = databaseCredentialsHandler;
     }
 
-    public void initDataSource() {
-        dataSource = new HikariDataSource(getHikariConfig());
+    public void initializeDatabase() {
+        if(initialized.get()) {
+            logger.warning("Attempted to initialize an already initialized database");
+            return;
+        }
+
+        playerJoinBlocker.block("Server is connecting to a database, pls wait a bit <33");
+
         try {
-            initRankTable();
-        } catch (SQLException e) {
-            logger.severe("Database failed to init database schema \n" + e.getMessage());
-            throw new DatabaseInitializationException("Failed to initialize database schema \n" + e.getMessage());
+
+            connectWithRetry();
+
+            logger.info("Database initialized successfully");
+        } catch(Exception e) {
+            initialized.set(false);
+            logger.log(Level.SEVERE, "Failed to initialize database", e);
+        } finally {
+            playerJoinBlocker.unblock();
         }
     }
 
-    public HikariConfig getHikariConfig() {
-        HikariConfig config = new HikariConfig();
+    private void connectWithRetry() throws FatalDatabaseInitializationException {
+        long retryDelay = INITIAL_RETRY_DELAY_MS;
+        int attempt = 0;
 
-        //temporary, will change the credentials to be put in as docker args
-        config.setJdbcUrl("jdbc:mysql://localhost:3306/wldb");
-        config.setUsername("root");
-        config.setPassword("w5lllll");
+        while(attempt < MAX_RETRIES && !shuttingDown.get()) {
+            attempt++;
+            logger.info("Database connection attempt " + attempt + " of " + MAX_RETRIES);
 
-        config.setMaximumPoolSize(10);
-        config.setConnectionTimeout(30000);
-        config.setIdleTimeout(600000);
-        config.setMaxLifetime(1800000);
+            try {
+                dataSource = createHikariDataSource();
 
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        config.addDataSourceProperty("prepStmtCacheSize", "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        return config;
+                if(testConnection()) {
+                    return;
+                }
+            } catch(SQLException e) {
+                logger.log(Level.WARNING, "Connection attempt " + attempt + " failed: " + e.getMessage());
+                MySQLError error = MySQLError.fromSQLException(e);
+                if(error.equals(MySQLError.INCORRECT_CREDENTIALS)) {
+                    logger.severe("MySQL Database Credentials are incorrect!");
+                    throw new FatalDatabaseInitializationException("MySQL Database Credentials are incorrect!",e);
+                }
+                if(error.equals(MySQLError.UNKNOWN_DATABASE)) {
+                    logger.severe("MySQL Database does not exist!");
+                    throw new FatalDatabaseInitializationException("MySQL Database does not exist!", e);
+                }
+                if(error.equals(MySQLError.NO_DATABASE_SELECTED)) {
+                    logger.severe("No MySQL database selected in connection URL!");
+                    throw new FatalDatabaseInitializationException("No MySQL database selected!", e);
+                }
+                if(error.equals(MySQLError.DENIED_PERMISSION)) {
+                    logger.severe("MySQL user lacks required permissions!");
+                    throw new FatalDatabaseInitializationException("MySQL user lacks required permissions!", e);
+                }
+
+                if(error.getClassification() == MySQLError.Classification.MUST_EVICT) {
+                    logger.severe("Fatal MySQL error - won't resolve with retries: " + error.name());
+                    throw new FatalDatabaseInitializationException("Fatal MySQL error: " + error.name(), e);
+                }
+
+
+                if(attempt < MAX_RETRIES && !shuttingDown.get()) {
+                    long jitter = (long) (retryDelay * 0.2 * (Math.random() - 0.5));
+                    long actualDelay = Math.max(100, retryDelay + jitter);
+
+                    logger.info("Retrying in " + actualDelay + "ms");
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(actualDelay);
+                    } catch(InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new FatalDatabaseInitializationException("Database connection interrupted", ie);
+                    }
+
+                    retryDelay = Math.min(retryDelay * 2, MAX_RETRY_DELAY_MS);
+                } else {
+                    throw new FatalDatabaseInitializationException("Database connection failed after " + attempt + " attempts: " + e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    public void initTables() throws SQLException {
+        initRankTable();
+    }
+
+    public boolean testConnection() throws SQLException {
+        if(dataSource == null) {
+            logger.warning("Cannot test connection: DataSource is null");
+            return false;
+        }
+
+        try(Connection testConnection = dataSource.getConnection()) {
+            if(testConnection.isValid(CONNECTION_TEST_TIMEOUT_SECONDS)) {
+                logger.info("Database connection test successful");
+                return true;
+            } else {
+                logger.warning("Connection validation failed");
+                return false;
+            }
+        }
+    }
+
+    public HikariDataSource createHikariDataSource() throws FatalDatabaseInitializationException {
+        try {
+            HikariConfig config = new HikariConfig();
+
+            config.setJdbcUrl(databaseCredentialsHandler.getURL());
+            config.setUsername(databaseCredentialsHandler.getUser());
+            config.setPassword(databaseCredentialsHandler.getPassword());
+
+            config.setMaximumPoolSize(10);
+            config.setConnectionTimeout(30000);
+            config.setIdleTimeout(600000);
+            config.setMaxLifetime(1800000);
+
+            config.addDataSourceProperty("cachePrepStmts", "true");
+            config.addDataSourceProperty("prepStmtCacheSize", "250");
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
+            return new HikariDataSource(config);
+        } catch(Exception e) {
+            throw new RuntimeException("Failed to configure database pool: " + e.getMessage(), e);
+        }
     }
 
     public DataSource getDataSource() {
@@ -63,9 +172,9 @@ public class DatabaseService {
     public void initRankTable() throws SQLException {
         String query = "CREATE TABLE IF NOT EXISTS ranks ( uuid BINARY(16) PRIMARY KEY, rankname VARCHAR(255) )";
 
-        try (
-             Connection conn = getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(query)
+        try(
+                Connection conn = getConnection();
+                PreparedStatement preparedStatement = conn.prepareStatement(query)
         ) {
             preparedStatement.executeUpdate();
         }
@@ -81,7 +190,7 @@ public class DatabaseService {
     }
 
     public synchronized void closePool() {
-        if (dataSource != null && !dataSource.isClosed()) {
+        if(dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
         }
     }
