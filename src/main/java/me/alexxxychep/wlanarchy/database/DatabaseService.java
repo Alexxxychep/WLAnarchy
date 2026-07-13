@@ -3,8 +3,6 @@ package me.alexxxychep.wlanarchy.database;
 import com.google.inject.Inject;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import me.alexxxychep.wlanarchy.WLAnarchy;
-import me.alexxxychep.wlanarchy.listeners.PlayerJoinBlocker;
 
 import javax.inject.Singleton;
 import javax.sql.DataSource;
@@ -23,45 +21,29 @@ public class DatabaseService {
     private static final long MAX_RETRY_DELAY_MS = 30000;
     private static final int CONNECTION_TEST_TIMEOUT_SECONDS = 5;
 
-    private final WLAnarchy wlAnarchy;
     private final Logger logger;
-    private final PlayerJoinBlocker playerJoinBlocker;
-    private HikariDataSource dataSource;
     private final DatabaseCredentialsHandler databaseCredentialsHandler;
 
+    private HikariDataSource dataSource;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final AtomicBoolean shuttingDown = new AtomicBoolean(false);
 
     @Inject
-    public DatabaseService(WLAnarchy wlAnarchy, Logger logger, PlayerJoinBlocker playerJoinBlocker, DatabaseCredentialsHandler databaseCredentialsHandler) {
-        this.wlAnarchy = wlAnarchy;
+    public DatabaseService(Logger logger, DatabaseCredentialsHandler databaseCredentialsHandler) {
         this.logger = logger;
-        this.playerJoinBlocker = playerJoinBlocker;
         this.databaseCredentialsHandler = databaseCredentialsHandler;
     }
 
-    public void initializeDatabase() {
+    public void initializeDatabase() throws Daat {
         if(initialized.get()) {
             logger.warning("Attempted to initialize an already initialized database");
             return;
         }
-
-        playerJoinBlocker.block("Server is connecting to a database, pls wait a bit <33");
-
-        try {
-
-            connectWithRetry();
-
-            logger.info("Database initialized successfully");
-        } catch(Exception e) {
-            initialized.set(false);
-            logger.log(Level.SEVERE, "Failed to initialize database", e);
-        } finally {
-            playerJoinBlocker.unblock();
-        }
+        connectWithRetry();
+        logger.info("Database initialized successfully");
     }
 
-    private void connectWithRetry() throws FatalDatabaseInitializationException {
+    private void connectWithRetry() throws DatabaseInitializationException {
         long retryDelay = INITIAL_RETRY_DELAY_MS;
         int attempt = 0;
 
@@ -121,7 +103,7 @@ public class DatabaseService {
         }
     }
 
-    public void initTables() throws SQLException {
+    public void initTables() throws DatabaseTableInitializationException {
         initRankTable();
     }
 
@@ -142,8 +124,12 @@ public class DatabaseService {
         }
     }
 
-    public HikariDataSource createHikariDataSource() throws FatalDatabaseInitializationException {
+    public HikariDataSource createHikariDataSource() throws DatabaseInitializationException {
         try {
+            if(!databaseCredentialsHandler.areCredentialsValid()) {
+                throw new DatabaseInitializationException("Not all database credentials are valid");
+            }
+
             HikariConfig config = new HikariConfig();
 
             config.setJdbcUrl(databaseCredentialsHandler.getURL());
@@ -169,7 +155,7 @@ public class DatabaseService {
         return dataSource;
     }
 
-    public void initRankTable() throws SQLException {
+    public void initRankTable() throws DatabaseTableInitializationException {
         String query = "CREATE TABLE IF NOT EXISTS ranks ( uuid BINARY(16) PRIMARY KEY, rankname VARCHAR(255) )";
 
         try(
@@ -177,12 +163,14 @@ public class DatabaseService {
                 PreparedStatement preparedStatement = conn.prepareStatement(query)
         ) {
             preparedStatement.executeUpdate();
+        } catch(SQLException e) {
+            throw new DatabaseTableInitializationException(e.getMessage(), e);
         }
     }
 
 
     public boolean isReady() {
-        return dataSource != null && !dataSource.isClosed();
+        return dataSource != null && DatadataSource.isClosed();
     }
 
     public Connection getConnection() throws SQLException {

@@ -33,6 +33,15 @@ dependencies {
     implementation("com.google.inject:guice:7.0.0")
     implementation("com.google.inject.extensions:guice-assistedinject:7.0.0")
     implementation("javax.inject:javax.inject:1")
+
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.mockito:mockito-core:5.11.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
+    testImplementation("com.h2database:h2:2.2.224")
+
+    testImplementation("org.assertj:assertj-core:3.25.3")
+    testImplementation("org.hamcrest:hamcrest:2.2")
 }
 
 
@@ -69,5 +78,17 @@ tasks {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+
+    reports {
+        html.required.set(true)
+        junitXml.required.set(true)
+    }
 }
 

@@ -29,9 +29,9 @@ public class DatabaseCredentialsHandler {
         return System.getenv("DATABASE_NAME");
     }
 
-    public String getURL() throws FatalDatabaseInitializationException {
+    public String getURL() {
         if(!areCredentialsValid()) {
-            throw new FatalDatabaseInitializationException("Some credentials are null, or port can't be parsed");
+            return null;
         }
         return String.format("jdbc:mysql://%s:%s/%s", getAddress(), getPort(), getName());
     }

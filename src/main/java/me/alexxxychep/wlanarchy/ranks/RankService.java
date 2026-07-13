@@ -2,7 +2,6 @@ package me.alexxxychep.wlanarchy.ranks;
 
 import com.google.inject.Inject;
 import me.alexxxychep.wlanarchy.Rank;
-import me.alexxxychep.wlanarchy.database.DatabaseService;
 
 import java.util.Objects;
 import java.util.UUID;
