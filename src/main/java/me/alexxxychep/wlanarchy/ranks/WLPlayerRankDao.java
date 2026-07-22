@@ -3,6 +3,7 @@ package me.alexxxychep.wlanarchy.ranks;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import me.alexxxychep.wlanarchy.Rank;
+import me.alexxxychep.wlanarchy.database.DatabaseExecutionException;
 import me.alexxxychep.wlanarchy.utils.UuidUtils;
 
 import javax.sql.DataSource;
@@ -37,7 +38,7 @@ public class WLPlayerRankDao {
         return CompletableFuture.runAsync(() -> saveRank(uuid, rank), executorService);
     }
 
-    public Rank getRankFromUUID(UUID uuid) {
+    public Rank getRankFromUUID(UUID uuid) throws DatabaseExecutionException {
         String query = "SELECT rankname FROM ranks WHERE uuid = ?";
         try(
                 Connection connection = dataSource.getConnection();
@@ -55,13 +56,12 @@ public class WLPlayerRankDao {
                 }
             }
         } catch(SQLException e) {
-            logger.warning("Error fetching rank from rank table! " + e.getMessage());
-            throw new RuntimeException(e);
+            throw new DatabaseExecutionException("Error fetching rank from rank table! ", e, query);
         }
         return Rank.PLAYER;
     }
 
-    public void saveRank(UUID uuid, Rank rank) {
+    public void saveRank(UUID uuid, Rank rank) throws DatabaseExecutionException {
         if(rank.equals(Rank.PLAYER)) {
             deleteRank(uuid);
             return;
@@ -80,12 +80,12 @@ public class WLPlayerRankDao {
             preparedStatement.setString(2, rank.toString().toLowerCase());
             preparedStatement.executeUpdate();
         } catch(SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseExecutionException("Error saving rank to rank table! ", e, query);
         }
     }
 
     //js use saveRank(uuid), this method is pretty dangerous
-    private void deleteRank(UUID uuid) {
+    private void deleteRank(UUID uuid) throws DatabaseExecutionException {
         String query = "DELETE FROM ranks WHERE uuid = ?";
         try(
                 Connection connection = dataSource.getConnection();
@@ -94,7 +94,7 @@ public class WLPlayerRankDao {
             preparedStatement.setBytes(1, UuidUtils.convertToBytes(uuid));
             preparedStatement.executeUpdate();
         } catch(SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseExecutionException("Error deleting rank from rank table! ", e, query);
         }
     }
 

@@ -7,6 +7,7 @@ import java.util.Map;
 public class DatabaseException extends Exception {
     private final MySQLError error;
     private final Map<String, String> context = new HashMap<>();
+
     public DatabaseException(String message, SQLException cause) {
         super(message, cause);
         this.error = MySQLError.fromSQLException(cause);
@@ -23,7 +24,7 @@ public class DatabaseException extends Exception {
     @Override
     public String getMessage() {
         StringBuilder builder = new StringBuilder();
-        builder.append(getMessage()).append("\n");
+        builder.append(super.getMessage()).append("\n");
         builder.append("Error: ").append(getError().name()).append(" : Error code: ").append(error.getErrorCode()).append("\n");
         if(!getContext().isEmpty()) {
             builder.append("Context: \n");
