@@ -8,6 +8,7 @@ public class DatabaseExecutionException extends DatabaseException {
     public DatabaseExecutionException(String message, SQLException cause, String query) {
         super(message, cause);
         this.query = query;
+        this.addContext("Query", query);
     }
 
     public String getQuery() {

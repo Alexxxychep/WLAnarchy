@@ -2,6 +2,7 @@ package me.alexxxychep.wlanarchy.ranks;
 
 import com.google.inject.Inject;
 import me.alexxxychep.wlanarchy.Rank;
+import me.alexxxychep.wlanarchy.database.DatabaseExecutionException;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -28,13 +29,21 @@ public class RankService {
 
     public Rank getRank(UUID uuid) {
         Objects.requireNonNull(uuid, "UUID cannot be null");
-        return rankDao.getRankFromUUID(uuid);
+        try {
+            return rankDao.getRankFromUUID(uuid);
+        } catch(DatabaseExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setRank(UUID uuid, Rank rank) {
         Objects.requireNonNull(uuid, "UUID cannot be null");
         Objects.requireNonNull(rank, "Rank cannot be null");
-        rankDao.saveRank(uuid, rank);
+        try {
+            rankDao.saveRank(uuid, rank);
+        } catch(DatabaseExecutionException e) {
+
+        }
     }
 
     public void shutdown() {
