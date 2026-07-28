@@ -12,30 +12,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 @Singleton
 public class WLPlayerRankDao {
     private final DataSource dataSource;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final Logger logger;
 
     @Inject
     public WLPlayerRankDao(DataSource dataSource, Logger logger) {
         this.dataSource = dataSource;
         this.logger = logger;
-    }
-
-    public CompletableFuture<Rank> getRankFromUUIDAsync(UUID uuid) {
-        return CompletableFuture.supplyAsync(() -> getRankFromUUID(uuid), executorService);
-    }
-
-    public CompletableFuture<Void> saveRankAsync(UUID uuid, Rank rank) {
-        return CompletableFuture.runAsync(() -> saveRank(uuid, rank), executorService);
     }
 
     public Rank getRankFromUUID(UUID uuid) throws DatabaseExecutionException {
@@ -52,7 +39,6 @@ public class WLPlayerRankDao {
                     if(rankName != null) {
                         return Rank.getRankByName(rankName);
                     }
-                    return Rank.PLAYER;
                 }
             }
         } catch(SQLException e) {
@@ -95,18 +81,6 @@ public class WLPlayerRankDao {
             preparedStatement.executeUpdate();
         } catch(SQLException e) {
             throw new DatabaseExecutionException("Error deleting rank from rank table! ", e, query);
-        }
-    }
-
-    public void shutdown() {
-        executorService.shutdown();
-        try {
-            if(!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
-                executorService.shutdownNow();
-            }
-        } catch(InterruptedException e) {
-            executorService.shutdownNow();
-            Thread.currentThread().interrupt();
         }
     }
 }

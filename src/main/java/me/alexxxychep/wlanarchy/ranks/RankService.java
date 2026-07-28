@@ -3,12 +3,18 @@ package me.alexxxychep.wlanarchy.ranks;
 import com.google.inject.Inject;
 import me.alexxxychep.wlanarchy.Rank;
 import me.alexxxychep.wlanarchy.database.DatabaseExecutionException;
+import me.alexxxychep.wlanarchy.service.ServiceException;
+import org.jline.utils.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class RankService {
+    private static final Logger log = LoggerFactory.getLogger(RankService.class);
     private final WLPlayerRankDao rankDao;
 
     @Inject
@@ -18,32 +24,60 @@ public class RankService {
 
     public CompletableFuture<Rank> getRankAsync(UUID uuid) {
         Objects.requireNonNull(uuid, "UUID cannot be null");
-        return rankDao.getRankFromUUIDAsync(uuid);
+        return rankDao.getRankFromUUIDAsync(uuid)
+                .exceptionally(throwable -> {
+                    Throwable cause = throwable;
+                    if(throwable instanceof CompletionException) {
+                        cause = throwable.getCause();
+                    }
+                    throw new CompletionException(getGettingRankException(uuid, cause));
+                });
     }
 
     public CompletableFuture<Void> setRankAsync(UUID uuid, Rank rank) {
         Objects.requireNonNull(uuid, "UUID cannot be null");
         Objects.requireNonNull(rank, "Rank cannot be null");
-        return rankDao.saveRankAsync(uuid, rank);
+        return rankDao.saveRankAsync(uuid, rank)
+                .exceptionally(throwable -> {
+                    Throwable cause = throwable;
+                    if(throwable instanceof CompletionException) {
+                        cause = throwable.getCause();
+                    }
+                    throw new CompletionException(getSettingRankException(uuid, rank, cause));
+                });
     }
 
-    public Rank getRank(UUID uuid) {
+    public Rank getRank(UUID uuid) throws ServiceException {
         Objects.requireNonNull(uuid, "UUID cannot be null");
         try {
             return rankDao.getRankFromUUID(uuid);
         } catch(DatabaseExecutionException e) {
-            throw new RuntimeException(e);
+            throw getGettingRankException(uuid, e);
         }
     }
 
-    public void setRank(UUID uuid, Rank rank) {
+    public void setRank(UUID uuid, Rank rank) throws ServiceException {
         Objects.requireNonNull(uuid, "UUID cannot be null");
         Objects.requireNonNull(rank, "Rank cannot be null");
         try {
             rankDao.saveRank(uuid, rank);
         } catch(DatabaseExecutionException e) {
-
+            throw getSettingRankException(uuid, rank, e);
         }
+    }
+
+    private ServiceException getSettingRankException(UUID uuid, Rank rank, Throwable cause) {
+        ServiceException serviceException = new ServiceException("Error setting rank!", cause);
+        serviceException.addContext("uuid", uuid.toString());
+        serviceException.addContext("rank", rank.toString());
+        return serviceException;
+    }
+
+
+    private ServiceException getGettingRankException(UUID uuid, Throwable cause) {
+        ServiceException serviceException = new ServiceException("Error getting rank!", cause);
+        serviceException.addContext("uuid", uuid.toString());
+        return serviceException;
     }
 
     public void shutdown() {

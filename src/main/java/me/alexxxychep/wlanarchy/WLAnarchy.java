@@ -6,6 +6,7 @@ import me.alexxxychep.wlanarchy.database.DatabaseInitializationException;
 import me.alexxxychep.wlanarchy.database.DatabaseService;
 import me.alexxxychep.wlanarchy.inject.InjectorModule;
 import me.alexxxychep.wlanarchy.listeners.PlayerJoinBlocker;
+import me.alexxxychep.wlanarchy.players.WLPlayer;
 import me.alexxxychep.wlanarchy.ranks.RankService;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,6 +22,7 @@ public class WLAnarchy extends JavaPlugin {
 
         injector = Guice.createInjector(new InjectorModule(this));
         enableDatabase();
+        
         registerEvents();
     }
 

@@ -1,14 +1,23 @@
 package me.alexxxychep.wlanarchy;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum Rank {
     PLAYER, VIP, MODERATOR, DEVELOPER;
 
-    public static Rank getRankByName(String name) {
+    private static final Map<String, Rank> RANK_BY_NAME = new HashMap<>();
+
+    static {
         for(Rank rank : values()) {
-            if(rank.toString().equalsIgnoreCase(name)) {
-                return rank;
-            }
+            RANK_BY_NAME.put(rank.name().toLowerCase(), rank);
         }
-        return Rank.PLAYER;
+    }
+
+    public static Rank getRankByName(String name) {
+        if (name == null) {
+            return Rank.PLAYER;
+        }
+        return RANK_BY_NAME.getOrDefault(name.toLowerCase(), Rank.PLAYER);
     }
 }
