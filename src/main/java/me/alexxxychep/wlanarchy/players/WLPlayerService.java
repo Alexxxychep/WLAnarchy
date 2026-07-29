@@ -8,16 +8,26 @@ import java.util.*;
 public class WLPlayerService {
     private final Map<UUID, WLPlayer> onlinePlayers = new HashMap<>();
 
-    public void registerPlayer(WLPlayer player) {
-        Objects.requireNonNull(player, "Player cannot be null!");
-        onlinePlayers.put(player.getUuid(), player);
-    }
-
-    public void unregisterPlayer(WLPlayer player) {
-        if(player == null || !onlinePlayers.containsKey(player.getUuid())) {
+    public void registerPlayer(UUID uuid) {
+        Objects.requireNonNull(uuid, "UUID cannot be null!");
+        if(onlinePlayers.containsKey(uuid)) {
             return;
         }
-        onlinePlayers.remove(player.getUuid());
+        WLPlayer player = new WLPlayer(uuid);
+        onlinePlayers.put(uuid, player);
+    }
+
+    public void unregisterPlayer(UUID uuid) {
+        Objects.requireNonNull(uuid, "UUID cannot be null!");
+        if(!onlinePlayers.containsKey(uuid)) {
+            return;
+        }
+        onlinePlayers.remove(uuid);
+    }
+
+
+    public boolean isPlayerOnline(UUID uuid) {
+        return onlinePlayers.containsKey(uuid);
     }
 
     public boolean isPlayerOnline(WLPlayer player) {

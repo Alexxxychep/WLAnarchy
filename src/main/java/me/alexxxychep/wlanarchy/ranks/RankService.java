@@ -22,31 +22,6 @@ public class RankService {
         this.rankDao = rankDao;
     }
 
-    public CompletableFuture<Rank> getRankAsync(UUID uuid) {
-        Objects.requireNonNull(uuid, "UUID cannot be null");
-        return rankDao.getRankFromUUIDAsync(uuid)
-                .exceptionally(throwable -> {
-                    Throwable cause = throwable;
-                    if(throwable instanceof CompletionException) {
-                        cause = throwable.getCause();
-                    }
-                    throw new CompletionException(getGettingRankException(uuid, cause));
-                });
-    }
-
-    public CompletableFuture<Void> setRankAsync(UUID uuid, Rank rank) {
-        Objects.requireNonNull(uuid, "UUID cannot be null");
-        Objects.requireNonNull(rank, "Rank cannot be null");
-        return rankDao.saveRankAsync(uuid, rank)
-                .exceptionally(throwable -> {
-                    Throwable cause = throwable;
-                    if(throwable instanceof CompletionException) {
-                        cause = throwable.getCause();
-                    }
-                    throw new CompletionException(getSettingRankException(uuid, rank, cause));
-                });
-    }
-
     public Rank getRank(UUID uuid) throws ServiceException {
         Objects.requireNonNull(uuid, "UUID cannot be null");
         try {
@@ -78,9 +53,5 @@ public class RankService {
         ServiceException serviceException = new ServiceException("Error getting rank!", cause);
         serviceException.addContext("uuid", uuid.toString());
         return serviceException;
-    }
-
-    public void shutdown() {
-        rankDao.shutdown();
     }
 }

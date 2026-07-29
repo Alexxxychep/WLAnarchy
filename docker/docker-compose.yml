@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  minecraft:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: minecraft-server
+    ports:
+      - "25565:25565"
+    environment:
+      - DATABASE_USER=${DATABASE_USER:-minecraft}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-securepassword}
+      - DATABASE_ADDRESS=${DATABASE_ADDRESS:-mysql}
+      - DATABASE_PORT=${DATABASE_PORT:-3306}
+      - DATABASE_NAME=${DATABASE_NAME:-minecraft}
+      - MEMORY=${MEMORY:-2G}
+    volumes:
+      - minecraft-data:/data
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - minecraft-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: minecraft-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-rootpassword}
+      - MYSQL_DATABASE=${DATABASE_NAME:-minecraft}
+      - MYSQL_USER=${DATABASE_USER:-minecraft}
+      - MYSQL_PASSWORD=${DATABASE_PASSWORD:-securepassword}
+    ports:
+      - "3306:3306"  # Remove this in production
+    volumes:
+      - mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max_connections=100
+      - --wait_timeout=28800
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - minecraft-network
+
+volumes:
+  minecraft-data:
+  mysql-data:
+
+networks:
+  minecraft-network:
+    driver: bridge

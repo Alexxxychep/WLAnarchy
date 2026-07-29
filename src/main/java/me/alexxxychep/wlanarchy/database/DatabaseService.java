@@ -164,7 +164,7 @@ public class DatabaseService {
 
 
     public boolean isReady() {
-        return dataSource != null && dataSource.isClosed();
+        return dataSource != null && !dataSource.isClosed();
     }
 
     public Connection getConnection() throws SQLException {

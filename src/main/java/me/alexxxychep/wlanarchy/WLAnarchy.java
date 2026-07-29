@@ -6,6 +6,7 @@ import me.alexxxychep.wlanarchy.database.DatabaseInitializationException;
 import me.alexxxychep.wlanarchy.database.DatabaseService;
 import me.alexxxychep.wlanarchy.inject.InjectorModule;
 import me.alexxxychep.wlanarchy.listeners.PlayerJoinBlocker;
+import me.alexxxychep.wlanarchy.listeners.PlayerRegisterListener;
 import me.alexxxychep.wlanarchy.players.WLPlayer;
 import me.alexxxychep.wlanarchy.ranks.RankService;
 import org.bukkit.Bukkit;
@@ -29,7 +30,6 @@ public class WLAnarchy extends JavaPlugin {
     @Override
     public void onDisable() {
         injector.getInstance(DatabaseService.class).closePool();
-        injector.getInstance(RankService.class).shutdown();
     }
 
     public void enableDatabase() {
@@ -43,6 +43,7 @@ public class WLAnarchy extends JavaPlugin {
 
     public void registerEvents() {
         getServer().getPluginManager().registerEvents(injector.getInstance(PlayerJoinBlocker.class), this);
+        getServer().getPluginManager().registerEvents(injector.getInstance(PlayerRegisterListener.class), this);
     }
 
 
