@@ -1,10 +1,12 @@
 package me.alexxxychep.wlanarchy.inject;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import me.alexxxychep.wlanarchy.WLAnarchy;
 import me.alexxxychep.wlanarchy.database.DatabaseCredentialsHandler;
 import me.alexxxychep.wlanarchy.database.DatabaseService;
+import me.alexxxychep.wlanarchy.listeners.PlayerRegisterListener;
 import me.alexxxychep.wlanarchy.players.WLPlayerService;
 import me.alexxxychep.wlanarchy.ranks.RankService;
 import me.alexxxychep.wlanarchy.ranks.WLPlayerRankDao;
@@ -26,5 +28,6 @@ public class InjectorModule extends AbstractModule {
         bind(WLPlayerService.class).in(Singleton.class);
         bind(WLPlayerRankDao.class).in(Singleton.class);
         bind(DatabaseCredentialsHandler.class).in(Singleton.class);
+        bind(PlayerRegisterListener.class).in(Singleton.class);
     }
 }

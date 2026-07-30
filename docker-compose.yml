@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   minecraft:
     build:
-      context: docker
+      context: .
       dockerfile: docker/Dockerfile
     container_name: minecraft-server
     ports:
@@ -15,8 +13,6 @@ services:
       - DATABASE_PORT=${DATABASE_PORT:-3306}
       - DATABASE_NAME=${DATABASE_NAME:-minecraft}
       - MEMORY=${MEMORY:-2G}
-    volumes:
-      - minecraft-data:/data
     depends_on:
       mysql:
         condition: service_healthy

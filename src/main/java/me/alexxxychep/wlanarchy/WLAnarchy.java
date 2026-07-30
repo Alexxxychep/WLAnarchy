@@ -20,8 +20,8 @@ public class WLAnarchy extends JavaPlugin {
 
     @Override
     public void onEnable() {
-
         injector = Guice.createInjector(new InjectorModule(this));
+
         enableDatabase();
         
         registerEvents();
@@ -46,5 +46,8 @@ public class WLAnarchy extends JavaPlugin {
         getServer().getPluginManager().registerEvents(injector.getInstance(PlayerRegisterListener.class), this);
     }
 
+    public Injector getInjector() {
+        return injector;
+    }
 
 }

@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import me.alexxxychep.wlanarchy.Rank;
 import me.alexxxychep.wlanarchy.database.DatabaseExecutionException;
+import me.alexxxychep.wlanarchy.database.DatabaseService;
 import me.alexxxychep.wlanarchy.utils.UuidUtils;
 
 import javax.sql.DataSource;
@@ -16,19 +17,17 @@ import java.util.logging.Logger;
 
 @Singleton
 public class WLPlayerRankDao {
-    private final DataSource dataSource;
-    private final Logger logger;
+    private final DatabaseService databaseService;
 
     @Inject
-    public WLPlayerRankDao(DataSource dataSource, Logger logger) {
-        this.dataSource = dataSource;
-        this.logger = logger;
+    public WLPlayerRankDao(DatabaseService databaseService) {
+        this.databaseService = databaseService;
     }
 
     public Rank getRankFromUUID(UUID uuid) throws DatabaseExecutionException {
         String query = "SELECT rankname FROM ranks WHERE uuid = ?";
         try(
-                Connection connection = dataSource.getConnection();
+                Connection connection = databaseService.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
             byte[] uuidBytes = UuidUtils.convertToBytes(uuid);
@@ -59,7 +58,7 @@ public class WLPlayerRankDao {
                 ON DUPLICATE KEY UPDATE rankname = VALUES(rankname);""";
 
         try(
-                Connection connection = dataSource.getConnection();
+                Connection connection = databaseService.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
             preparedStatement.setBytes(1, UuidUtils.convertToBytes(uuid));
@@ -74,7 +73,7 @@ public class WLPlayerRankDao {
     private void deleteRank(UUID uuid) throws DatabaseExecutionException {
         String query = "DELETE FROM ranks WHERE uuid = ?";
         try(
-                Connection connection = dataSource.getConnection();
+                Connection connection = databaseService.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
             preparedStatement.setBytes(1, UuidUtils.convertToBytes(uuid));

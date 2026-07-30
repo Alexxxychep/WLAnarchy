@@ -49,28 +49,33 @@ tasks {
     compileJava {
         options.release = 21
     }
-    shadowJar {
 
+    // Disable the default jar task
+    jar {
+        enabled = false
+    }
+
+    shadowJar {
         relocate("com.zaxxer.hikari", "me.alexxxychep.libs.hikari")
         relocate("com.mysql", "me.alexxxychep.libs.mysql")
         relocate("com.google.inject", "me.alexxxychep.libs.inject")
         relocate("com.google.common", "me.alexxxychep.libs.guava")
         relocate("javax.inject", "me.alexxxychep.libs.javax.inject")
-
         exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
-
         mergeServiceFiles()
-
         archiveClassifier.set("")
+    }
+
+    reobfJar {
+        // Explicitly depend on shadowJar
+        dependsOn(shadowJar)
+        inputJar.set(shadowJar.flatMap { it.archiveFile })
     }
 
     assemble {
         dependsOn(reobfJar)
     }
 
-    reobfJar {
-        inputJar.set(shadowJar.flatMap { it.archiveFile })
-    }
     javadoc {
         options.encoding = Charsets.UTF_8.name()
     }

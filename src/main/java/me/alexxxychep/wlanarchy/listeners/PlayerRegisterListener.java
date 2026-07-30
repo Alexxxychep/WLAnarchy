@@ -1,14 +1,17 @@
 package me.alexxxychep.wlanarchy.listeners;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import me.alexxxychep.wlanarchy.players.WLPlayerService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import javax.inject.Inject;
+
 import java.util.UUID;
 
+@Singleton
 public class PlayerRegisterListener implements Listener {
     private final WLPlayerService playerService;
 
