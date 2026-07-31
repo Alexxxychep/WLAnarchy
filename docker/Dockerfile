@@ -6,6 +6,7 @@ WORKDIR /data
 RUN mkdir -p /data/plugins
 
 COPY docker/paper-1.21.11.jar /data/
+COPY docker/mojang_1.21.11.jar /data/cache
 COPY build/libs/WLAnarchy-1.0-reobf.jar /data/plugins/WLAnarchy-1.0.jar
 RUN chown -R minecraft:minecraft /data
 
