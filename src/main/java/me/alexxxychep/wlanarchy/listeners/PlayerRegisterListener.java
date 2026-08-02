@@ -3,7 +3,6 @@ package me.alexxxychep.wlanarchy.listeners;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import me.alexxxychep.wlanarchy.Rank;
-import me.alexxxychep.wlanarchy.players.WLPlayerService;
 import me.alexxxychep.wlanarchy.ranks.RankService;
 import me.alexxxychep.wlanarchy.service.ServiceException;
 import org.bukkit.event.EventHandler;
@@ -18,20 +17,17 @@ import java.util.UUID;
 
 @Singleton
 public class PlayerRegisterListener implements Listener {
-    private final WLPlayerService playerService;
     private final Logger logger = LoggerFactory.getLogger(PlayerRegisterListener.class);
     private final RankService rankService;
 
     @Inject
-    public PlayerRegisterListener(WLPlayerService playerService, RankService rankService) {
-        this.playerService = playerService;
+    public PlayerRegisterListener(RankService rankService) {
         this.rankService = rankService;
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
-        playerService.registerPlayer(uuid);
         try {
             logger.info(rankService.getRank(uuid).name());
         } catch (ServiceException e) {
@@ -42,7 +38,6 @@ public class PlayerRegisterListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
-        playerService.unregisterPlayer(uuid);
         try {
             rankService.setRank(uuid, Rank.DEVELOPER);
         } catch (ServiceException e) {

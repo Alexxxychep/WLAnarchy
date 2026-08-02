@@ -1,9 +1,6 @@
 package me.alexxxychep.wlanarchy.database;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import java.util.logging.Logger;
 
 @Singleton
 public class DatabaseCredentialsHandler {

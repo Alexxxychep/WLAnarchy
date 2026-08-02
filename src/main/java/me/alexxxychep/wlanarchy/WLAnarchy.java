@@ -7,9 +7,6 @@ import me.alexxxychep.wlanarchy.database.DatabaseService;
 import me.alexxxychep.wlanarchy.inject.InjectorModule;
 import me.alexxxychep.wlanarchy.listeners.PlayerJoinBlocker;
 import me.alexxxychep.wlanarchy.listeners.PlayerRegisterListener;
-import me.alexxxychep.wlanarchy.players.WLPlayer;
-import me.alexxxychep.wlanarchy.ranks.RankService;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Logger;
