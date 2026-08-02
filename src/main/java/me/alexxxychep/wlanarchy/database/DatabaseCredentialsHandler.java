@@ -34,6 +34,6 @@ public class DatabaseCredentialsHandler {
     }
 
     public boolean areCredentialsValid() {
-        return getUser() != null && getPassword() != null && getAddress() != null && getPort() != null;
+        return getUser() != null && getPassword() != null && getAddress() != null && getPort() != null && getName() != null;
     }
 }

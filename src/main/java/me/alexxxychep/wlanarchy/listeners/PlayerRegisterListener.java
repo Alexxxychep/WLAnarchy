@@ -2,7 +2,7 @@ package me.alexxxychep.wlanarchy.listeners;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import me.alexxxychep.wlanarchy.Rank;
+import me.alexxxychep.wlanarchy.ranks.Rank;
 import me.alexxxychep.wlanarchy.ranks.RankService;
 import me.alexxxychep.wlanarchy.service.ServiceException;
 import org.bukkit.event.EventHandler;

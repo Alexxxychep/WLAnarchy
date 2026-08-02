@@ -2,18 +2,15 @@ package me.alexxxychep.wlanarchy.ranks;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import me.alexxxychep.wlanarchy.Rank;
 import me.alexxxychep.wlanarchy.database.DatabaseExecutionException;
 import me.alexxxychep.wlanarchy.database.DatabaseService;
 import me.alexxxychep.wlanarchy.utils.UuidUtils;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 @Singleton
 public class WLPlayerRankDao {

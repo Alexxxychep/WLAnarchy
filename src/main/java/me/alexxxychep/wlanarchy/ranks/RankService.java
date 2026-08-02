@@ -1,17 +1,13 @@
 package me.alexxxychep.wlanarchy.ranks;
 
 import com.google.inject.Inject;
-import me.alexxxychep.wlanarchy.Rank;
 import me.alexxxychep.wlanarchy.database.DatabaseExecutionException;
 import me.alexxxychep.wlanarchy.service.ServiceException;
-import org.jline.utils.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 public class RankService {
     private static final Logger log = LoggerFactory.getLogger(RankService.class);

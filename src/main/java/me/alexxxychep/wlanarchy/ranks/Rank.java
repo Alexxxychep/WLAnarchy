@@ -1,4 +1,4 @@
-package me.alexxxychep.wlanarchy;
+package me.alexxxychep.wlanarchy.ranks;
 
 import java.util.HashMap;
 import java.util.Map;
