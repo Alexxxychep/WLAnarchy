@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.util.UUID;
@@ -18,13 +19,12 @@ import java.util.UUID;
 @Singleton
 public class PlayerRegisterListener implements Listener {
     private final WLPlayerService playerService;
-    private final Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(PlayerRegisterListener.class);
     private final RankService rankService;
 
     @Inject
-    public PlayerRegisterListener(WLPlayerService playerService, Logger logger, RankService rankService) {
+    public PlayerRegisterListener(WLPlayerService playerService, RankService rankService) {
         this.playerService = playerService;
-        this.logger = logger;
         this.rankService = rankService;
     }
 
@@ -32,7 +32,11 @@ public class PlayerRegisterListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         playerService.registerPlayer(uuid);
-        logger.info(playerService.getOnlinePlayer(uuid).getRank().name());
+        try {
+            logger.info(rankService.getRank(uuid).name());
+        } catch (ServiceException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @EventHandler

@@ -40,6 +40,13 @@ public class DatabaseService {
             return;
         }
         connectWithRetry();
+        try {
+            initTables();
+        } catch (DatabaseExecutionException e) {
+            DatabaseInitializationException exception = new DatabaseInitializationException("Database failed to initialize needed tables!");
+            exception.addContext("query", e.getQuery());
+            throw exception;
+        }
         logger.info("Database initialized successfully");
     }
 

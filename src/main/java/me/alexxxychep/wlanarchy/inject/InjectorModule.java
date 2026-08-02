@@ -1,7 +1,6 @@
 package me.alexxxychep.wlanarchy.inject;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import me.alexxxychep.wlanarchy.WLAnarchy;
 import me.alexxxychep.wlanarchy.database.DatabaseCredentialsHandler;
@@ -11,6 +10,7 @@ import me.alexxxychep.wlanarchy.players.WLPlayerService;
 import me.alexxxychep.wlanarchy.ranks.RankService;
 import me.alexxxychep.wlanarchy.ranks.WLPlayerRankDao;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.slf4j.Logger;
 
 public class InjectorModule extends AbstractModule {
     private final WLAnarchy plugin;
