@@ -2,6 +2,7 @@ package me.alexxxychep.wlanarchy;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import me.alexxxychep.wlanarchy.chat.ChatListener;
 import me.alexxxychep.wlanarchy.database.DatabaseInitializationException;
 import me.alexxxychep.wlanarchy.database.DatabaseService;
 import me.alexxxychep.wlanarchy.inject.InjectorModule;
@@ -41,6 +42,7 @@ public class WLAnarchy extends JavaPlugin {
     public void registerEvents() {
         getServer().getPluginManager().registerEvents(injector.getInstance(PlayerJoinBlocker.class), this);
         getServer().getPluginManager().registerEvents(injector.getInstance(PlayerRegisterListener.class), this);
+        getServer().getPluginManager().registerEvents(injector.getInstance(ChatListener.class), this);
     }
 
     public Injector getInjector() {
