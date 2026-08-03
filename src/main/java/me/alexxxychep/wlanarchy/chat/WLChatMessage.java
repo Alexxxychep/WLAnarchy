@@ -19,4 +19,8 @@ public class WLChatMessage {
     public boolean isGlobal() {
         return global;
     }
+
+    public Component toComponent() {
+        return component;
+    }
 }

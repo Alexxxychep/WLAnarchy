@@ -5,8 +5,8 @@ import com.google.inject.Singleton;
 import java.util.UUID;
 
 @Singleton
-public class PlayerValidator {
-    public boolean canText(UUID uuid) {
+public class AuthenticationService {
+    public boolean isAuthenticated(UUID uuid) {
         return true;
     }
 }
