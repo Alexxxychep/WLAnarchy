@@ -1,14 +1,21 @@
 package me.alexxxychep.wlanarchy.chat;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+
+import java.util.UUID;
 
 public class WLChatMessage {
     private final boolean global;
-    private Component component;
+    private Component content;
+    private Component senderName;
+    private UUID sender;
 
-    public WLChatMessage(boolean global, Component component) {
+    public WLChatMessage(boolean global, Component content, UUID sender, Component senderName) {
         this.global = global;
-        this.component = component;
+        this.content = content;
+        this.sender = sender;
+        this.senderName = senderName;
     }
 
     public WLChatMessage appendComponent(Component component) {
@@ -16,11 +23,21 @@ public class WLChatMessage {
         return this;
     }
 
+    public boolean isConsole() {
+        return sender == null;
+    }
+
     public boolean isGlobal() {
         return global;
     }
 
-    public Component toComponent() {
-        return component;
+    public Component getContent() {
+        return content;
+    }
+
+    public Component toMessage() {
+        return senderName
+                .append(Component.text(" →⇢➠➢➤➥➸↪ ").color(NamedTextColor.GRAY))
+                .append(content);
     }
 }
