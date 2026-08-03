@@ -37,7 +37,8 @@ public class WLChatMessage {
 
     public Component toMessage() {
         return senderName
-                .append(Component.text(" →⇢➠➢➤➥➸↪ ").color(NamedTextColor.GRAY))
+                .append(Component.text(" → ").color(NamedTextColor.BLUE))
+                .append(content)
                 .append(content);
     }
 }
