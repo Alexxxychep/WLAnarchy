@@ -6,6 +6,7 @@ import com.google.inject.internal.InternalFlags;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import me.alexxxychep.wlanarchy.auth.AuthenticationService;
+import me.alexxxychep.wlanarchy.player.NameService;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -22,12 +23,13 @@ import java.util.*;
 
 @Singleton
 public class ChatListener implements Listener {
-    ChatMessageFactory messageFactory = new ChatMessageFactory();
     private final AuthenticationService authenticationService;
+    private final ChatMessageFactory messageFactory;
 
     @Inject
-    public ChatListener(AuthenticationService authenticationService) {
+    public ChatListener(AuthenticationService authenticationService, NameService nameService) {
         this.authenticationService = authenticationService;
+        this.messageFactory = new ChatMessageFactory(nameService);
     }
 
     @EventHandler
@@ -38,7 +40,8 @@ public class ChatListener implements Listener {
             event.setCancelled(true);
             return;
         }
-        WLChatMessage chatMessage = messageFactory.fromComponent(event.message());
+
+        WLChatMessage chatMessage = messageFactory.fromComponent(event.message(), uuid);
 
         if(!chatMessage.isGlobal()) {
             event.viewers().clear();
@@ -47,7 +50,7 @@ public class ChatListener implements Listener {
 
         event.renderer((source, sourceDisplayName, message, viewer) -> {
 
-            return chatMessage.toComponent();
+            return chatMessage.toMessage();
         });
     }
 
@@ -59,7 +62,7 @@ public class ChatListener implements Listener {
         Collection<Player> nearbyPlayers = world.getNearbyPlayers(
                 location,
                 radius,
-                p -> p != player
+                nearbyPlayer -> nearbyPlayer != player
         );
 
         @SuppressWarnings("unchecked")
