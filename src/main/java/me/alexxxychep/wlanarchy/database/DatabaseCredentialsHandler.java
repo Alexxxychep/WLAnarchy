@@ -19,7 +19,6 @@ public class DatabaseCredentialsHandler {
 
     public String getPort() {
         return System.getenv("DATABASE_PORT");
-
     }
 
     public String getName() {
