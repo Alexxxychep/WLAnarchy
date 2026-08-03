@@ -1,4 +1,4 @@
-FROM openjdk:21-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 RUN addgroup -S minecraft && adduser -S -G minecraft minecraft
 
