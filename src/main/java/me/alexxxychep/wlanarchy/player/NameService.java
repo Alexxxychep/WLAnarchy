@@ -18,7 +18,7 @@ public class NameService {
     }
 
     public String getRawDisplayName(UUID uuid) {
-        if(customNames.containsKey(uuid)) {
+        if (customNames.containsKey(uuid)) {
             return customNames.get(uuid);
         }
         return Bukkit.getPlayer(uuid).getName();

@@ -22,7 +22,7 @@ public class RankService {
         Objects.requireNonNull(uuid, "UUID cannot be null");
         try {
             return rankDao.getRankFromUUID(uuid);
-        } catch(DatabaseExecutionException e) {
+        } catch (DatabaseExecutionException e) {
             throw getGettingRankException(uuid, e);
         }
     }
@@ -32,7 +32,7 @@ public class RankService {
         Objects.requireNonNull(rank, "Rank cannot be null");
         try {
             rankDao.saveRank(uuid, rank);
-        } catch(DatabaseExecutionException e) {
+        } catch (DatabaseExecutionException e) {
             throw getSettingRankException(uuid, rank, e);
         }
     }

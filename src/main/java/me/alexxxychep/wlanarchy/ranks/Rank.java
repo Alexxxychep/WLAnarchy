@@ -9,7 +9,7 @@ public enum Rank {
     private static final Map<String, Rank> RANK_BY_NAME = new HashMap<>();
 
     static {
-        for(Rank rank : values()) {
+        for (Rank rank : values()) {
             RANK_BY_NAME.put(rank.name().toLowerCase(), rank);
         }
     }

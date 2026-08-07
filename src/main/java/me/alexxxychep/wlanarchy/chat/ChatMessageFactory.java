@@ -18,7 +18,7 @@ public class ChatMessageFactory {
         TextComponent textComponent = (TextComponent) component;
         String rawContent = textComponent.content();
         boolean global = rawContent.startsWith("!");
-        if(global) {
+        if (global) {
             rawContent = rawContent.substring(1);
         }
 

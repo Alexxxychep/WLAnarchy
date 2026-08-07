@@ -21,7 +21,7 @@ public class WLAnarchy extends JavaPlugin {
         injector = Guice.createInjector(new InjectorModule(this));
 
         enableDatabase();
-        
+
         registerEvents();
     }
 
@@ -33,7 +33,7 @@ public class WLAnarchy extends JavaPlugin {
     public void enableDatabase() {
         try {
             injector.getInstance(DatabaseService.class).initializeDatabase();
-        } catch(DatabaseInitializationException e) {
+        } catch (DatabaseInitializationException e) {
             injector.getInstance(PlayerJoinBlocker.class).block("Датабаза не запустилась!");
             injector.getInstance(Logger.class).severe("Fatal error while initializing database! " + e.getMessage());
         }

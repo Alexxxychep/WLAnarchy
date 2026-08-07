@@ -31,9 +31,9 @@ public class WLException extends RuntimeException {
     public String getMessage() {
         StringBuilder builder = new StringBuilder();
         builder.append(super.getMessage()).append("\n");
-        if(!getContext().isEmpty()) {
+        if (!getContext().isEmpty()) {
             builder.append("Context: \n");
-            for(Map.Entry<String, String> contextEntry : getContext().entrySet()) {
+            for (Map.Entry<String, String> contextEntry : getContext().entrySet()) {
                 builder.append(contextEntry.getKey()).append(" -> ").append(contextEntry.getValue()).append("\n");
             }
         }

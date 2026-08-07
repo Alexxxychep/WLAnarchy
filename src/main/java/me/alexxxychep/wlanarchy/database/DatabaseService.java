@@ -33,7 +33,7 @@ public class DatabaseService {
     }
 
     public void initializeDatabase() throws DatabaseInitializationException {
-        if(initialized.get()) {
+        if (initialized.get()) {
             logger.warn("Attempted to initialize an already initialized database");
             return;
         }
@@ -51,32 +51,32 @@ public class DatabaseService {
     private void connectWithRetry() throws DatabaseInitializationException {
         int attempt = 0;
 
-        while(attempt < MAX_RETRIES && !shuttingDown.get()) {
+        while (attempt < MAX_RETRIES && !shuttingDown.get()) {
             attempt++;
             logger.info("Database connection attempt " + attempt + " of " + MAX_RETRIES);
 
             try {
                 dataSource = createHikariDataSource();
 
-                if(testConnection()) {
+                if (testConnection()) {
                     return;
                 }
-            } catch(SQLException e) {
+            } catch (SQLException e) {
                 logger.error("Connection attempt {} failed: {}", attempt, e.getMessage());
 
                 MySQLError error = MySQLError.fromSQLException(e);
 
-                if(error.getClassification() == MySQLError.Classification.MUST_EVICT) {
+                if (error.getClassification() == MySQLError.Classification.MUST_EVICT) {
                     logger.error("Fatal MySQL error - won't resolve with retries: {}", error.name());
                     throw new DatabaseInitializationException("Fatal MySQL error: " + error.name(), e);
                 }
 
-                if(attempt < MAX_RETRIES && !shuttingDown.get()) {
+                if (attempt < MAX_RETRIES && !shuttingDown.get()) {
 
                     logger.info("Retrying in {} ms", RETRY_DELAY_MS);
                     try {
                         TimeUnit.MILLISECONDS.sleep(RETRY_DELAY_MS);
-                    } catch(InterruptedException ie) {
+                    } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
                         throw new DatabaseInitializationException("Database connection interrupted", e);
                     }
@@ -92,13 +92,13 @@ public class DatabaseService {
     }
 
     public boolean testConnection() throws SQLException {
-        if(dataSource == null) {
+        if (dataSource == null) {
             logger.error("Cannot test connection: DataSource is null");
             return false;
         }
 
-        try(Connection testConnection = dataSource.getConnection()) {
-            if(testConnection.isValid(CONNECTION_TEST_TIMEOUT_SECONDS)) {
+        try (Connection testConnection = dataSource.getConnection()) {
+            if (testConnection.isValid(CONNECTION_TEST_TIMEOUT_SECONDS)) {
                 logger.info("Database connection test successful");
                 return true;
             } else {
@@ -109,7 +109,7 @@ public class DatabaseService {
     }
 
     public HikariDataSource createHikariDataSource() throws DatabaseInitializationException {
-        if(!databaseCredentialsHandler.areCredentialsValid()) {
+        if (!databaseCredentialsHandler.areCredentialsValid()) {
             throw new DatabaseInitializationException("Not all database credentials are valid");
         }
 
@@ -138,12 +138,12 @@ public class DatabaseService {
     public void initRankTable() throws DatabaseExecutionException {
         String query = "CREATE TABLE IF NOT EXISTS ranks ( uuid BINARY(16) PRIMARY KEY, rankname VARCHAR(255) )";
 
-        try(
+        try (
                 Connection conn = getConnection();
                 PreparedStatement preparedStatement = conn.prepareStatement(query)
         ) {
             preparedStatement.executeUpdate();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             throw new DatabaseExecutionException(e.getMessage(), e, query);
         }
     }
@@ -158,7 +158,7 @@ public class DatabaseService {
     }
 
     public synchronized void closePool() {
-        if(dataSource != null && !dataSource.isClosed()) {
+        if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
         }
     }

@@ -23,7 +23,7 @@ public class PlayerJoinBlocker implements Listener {
 
     @EventHandler
     public void onPlayerAsyncPreLogin(AsyncPlayerPreLoginEvent event) {
-        if(!blocked.get()) {
+        if (!blocked.get()) {
             return;
         }
         event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text(kickMessage));

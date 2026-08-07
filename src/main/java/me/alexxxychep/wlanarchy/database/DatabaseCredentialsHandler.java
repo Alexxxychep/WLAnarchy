@@ -26,7 +26,7 @@ public class DatabaseCredentialsHandler {
     }
 
     public String getURL() {
-        if(!areCredentialsValid()) {
+        if (!areCredentialsValid()) {
             return null;
         }
         return String.format("jdbc:mysql://%s:%s/%s", getAddress(), getPort(), getName());

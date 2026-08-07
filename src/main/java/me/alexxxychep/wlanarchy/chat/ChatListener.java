@@ -33,7 +33,7 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onAsyncChat(AsyncChatEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
-        if(!authenticationService.isAuthenticated(uuid)) {
+        if (!authenticationService.isAuthenticated(uuid)) {
             event.getPlayer().sendMessage(Component.text("You aren't authenticated!").color(TextColor.color(NamedTextColor.RED)));
             event.setCancelled(true);
             return;
@@ -41,7 +41,7 @@ public class ChatListener implements Listener {
 
         WLChatMessage chatMessage = messageFactory.fromComponent(event.message(), uuid);
 
-        if(!chatMessage.isGlobal()) {
+        if (!chatMessage.isGlobal()) {
             event.viewers().clear();
             event.viewers().addAll(getLocalAudience(event.getPlayer(), 80));
         }

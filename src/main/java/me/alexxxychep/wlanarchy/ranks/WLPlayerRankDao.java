@@ -23,28 +23,28 @@ public class WLPlayerRankDao {
 
     public Rank getRankFromUUID(UUID uuid) throws DatabaseExecutionException {
         String query = "SELECT rankname FROM ranks WHERE uuid = ?";
-        try(
+        try (
                 Connection connection = databaseService.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
             byte[] uuidBytes = UuidUtils.convertToBytes(uuid);
             preparedStatement.setBytes(1, uuidBytes);
-            try(ResultSet resultSet = preparedStatement.executeQuery()) {
-                if(resultSet.next()) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
                     String rankName = resultSet.getString("rankname");
-                    if(rankName != null) {
+                    if (rankName != null) {
                         return Rank.getRankByName(rankName);
                     }
                 }
             }
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             throw new DatabaseExecutionException("Error fetching rank from rank table! ", e, query);
         }
         return Rank.PLAYER;
     }
 
     public void saveRank(UUID uuid, Rank rank) throws DatabaseExecutionException {
-        if(rank.equals(Rank.PLAYER)) {
+        if (rank.equals(Rank.PLAYER)) {
             deleteRank(uuid);
             return;
         }
@@ -54,14 +54,14 @@ public class WLPlayerRankDao {
                 VALUES (?, ?)
                 ON DUPLICATE KEY UPDATE rankname = VALUES(rankname);""";
 
-        try(
+        try (
                 Connection connection = databaseService.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
             preparedStatement.setBytes(1, UuidUtils.convertToBytes(uuid));
             preparedStatement.setString(2, rank.toString().toLowerCase());
             preparedStatement.executeUpdate();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             throw new DatabaseExecutionException("Error saving rank to rank table! ", e, query);
         }
     }
@@ -69,13 +69,13 @@ public class WLPlayerRankDao {
     //js use saveRank(uuid), this method is pretty dangerous
     private void deleteRank(UUID uuid) throws DatabaseExecutionException {
         String query = "DELETE FROM ranks WHERE uuid = ?";
-        try(
+        try (
                 Connection connection = databaseService.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(query)
         ) {
             preparedStatement.setBytes(1, UuidUtils.convertToBytes(uuid));
             preparedStatement.executeUpdate();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             throw new DatabaseExecutionException("Error deleting rank from rank table! ", e, query);
         }
     }

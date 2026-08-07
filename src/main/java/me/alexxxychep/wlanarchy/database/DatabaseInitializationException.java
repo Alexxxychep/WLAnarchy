@@ -6,6 +6,7 @@ public class DatabaseInitializationException extends DatabaseException {
     public DatabaseInitializationException(String message, SQLException cause) {
         super(message, cause);
     }
+
     public DatabaseInitializationException(String message) {
         super(message, new SQLException(message));
     }
