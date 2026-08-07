@@ -1,27 +1,26 @@
 package me.alexxxychep.wlanarchy.database;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.inject.Singleton;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Singleton
 public class DatabaseService {
     private static final int MAX_RETRIES = 5;
-    private static final long INITIAL_RETRY_DELAY_MS = 1000;
-    private static final long MAX_RETRY_DELAY_MS = 30000;
+    private static final long RETRY_DELAY_MS = 30000;
     private static final int CONNECTION_TEST_TIMEOUT_SECONDS = 5;
 
-    private final Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(DatabaseService.class);
     private final DatabaseCredentialsHandler databaseCredentialsHandler;
 
     private HikariDataSource dataSource;
@@ -29,14 +28,13 @@ public class DatabaseService {
     private final AtomicBoolean shuttingDown = new AtomicBoolean(false);
 
     @Inject
-    public DatabaseService(Logger logger, DatabaseCredentialsHandler databaseCredentialsHandler) {
-        this.logger = logger;
+    public DatabaseService(DatabaseCredentialsHandler databaseCredentialsHandler) {
         this.databaseCredentialsHandler = databaseCredentialsHandler;
     }
 
     public void initializeDatabase() throws DatabaseInitializationException {
         if(initialized.get()) {
-            logger.warning("Attempted to initialize an already initialized database");
+            logger.warn("Attempted to initialize an already initialized database");
             return;
         }
         connectWithRetry();
@@ -51,7 +49,6 @@ public class DatabaseService {
     }
 
     private void connectWithRetry() throws DatabaseInitializationException {
-        long retryDelay = INITIAL_RETRY_DELAY_MS;
         int attempt = 0;
 
         while(attempt < MAX_RETRIES && !shuttingDown.get()) {
@@ -65,42 +62,24 @@ public class DatabaseService {
                     return;
                 }
             } catch(SQLException e) {
-                logger.log(Level.WARNING, "Connection attempt " + attempt + " failed: " + e.getMessage());
+                logger.error("Connection attempt {} failed: {}", attempt, e.getMessage());
+
                 MySQLError error = MySQLError.fromSQLException(e);
-                if(error.equals(MySQLError.INCORRECT_CREDENTIALS)) {
-                    logger.severe("MySQL Database Credentials are incorrect!");
-                    throw new DatabaseInitializationException("MySQL Database Credentials are incorrect!",e);
-                }
-                if(error.equals(MySQLError.UNKNOWN_DATABASE)) {
-                    logger.severe("MySQL Database does not exist!");
-                    throw new DatabaseInitializationException("MySQL Database does not exist!", e);
-                }
-                if(error.equals(MySQLError.NO_DATABASE_SELECTED)) {
-                    logger.severe("No MySQL database selected in connection URL!");
-                    throw new DatabaseInitializationException("No MySQL database selected!", e);
-                }
-                if(error.equals(MySQLError.DENIED_PERMISSION)) {
-                    logger.severe("MySQL user lacks required permissions!");
-                    throw new DatabaseInitializationException("MySQL user lacks required permissions!", e);
-                }
 
                 if(error.getClassification() == MySQLError.Classification.MUST_EVICT) {
-                    logger.severe("Fatal MySQL error - won't resolve with retries: " + error.name());
+                    logger.error("Fatal MySQL error - won't resolve with retries: {}", error.name());
                     throw new DatabaseInitializationException("Fatal MySQL error: " + error.name(), e);
                 }
 
                 if(attempt < MAX_RETRIES && !shuttingDown.get()) {
-                    long jitter = (long) (retryDelay * 0.2 * (Math.random() - 0.5));
-                    long actualDelay = Math.max(100, retryDelay + jitter);
 
-                    logger.info("Retrying in " + actualDelay + "ms");
+                    logger.info("Retrying in {} ms", RETRY_DELAY_MS);
                     try {
-                        TimeUnit.MILLISECONDS.sleep(actualDelay);
+                        TimeUnit.MILLISECONDS.sleep(RETRY_DELAY_MS);
                     } catch(InterruptedException ie) {
                         Thread.currentThread().interrupt();
                         throw new DatabaseInitializationException("Database connection interrupted", e);
                     }
-                    retryDelay = Math.min(retryDelay * 2, MAX_RETRY_DELAY_MS);
                 } else {
                     throw new DatabaseInitializationException("Database connection failed after " + attempt + " attempts: " + e.getMessage(), e);
                 }
@@ -114,7 +93,7 @@ public class DatabaseService {
 
     public boolean testConnection() throws SQLException {
         if(dataSource == null) {
-            logger.warning("Cannot test connection: DataSource is null");
+            logger.error("Cannot test connection: DataSource is null");
             return false;
         }
 
@@ -123,7 +102,7 @@ public class DatabaseService {
                 logger.info("Database connection test successful");
                 return true;
             } else {
-                logger.warning("Connection validation failed");
+                logger.error("Connection validation failed");
                 return false;
             }
         }

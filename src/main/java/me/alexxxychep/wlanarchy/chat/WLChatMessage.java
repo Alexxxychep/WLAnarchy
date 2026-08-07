@@ -19,7 +19,7 @@ public class WLChatMessage {
     }
 
     public WLChatMessage appendComponent(Component component) {
-        component.append(component);
+        content.append(component);
         return this;
     }
 
@@ -38,7 +38,6 @@ public class WLChatMessage {
     public Component toMessage() {
         return senderName
                 .append(Component.text(" → ").color(NamedTextColor.BLUE))
-                .append(content)
                 .append(content);
     }
 }

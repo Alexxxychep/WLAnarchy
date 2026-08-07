@@ -14,6 +14,7 @@ public class ChatMessageFactory {
     }
 
     public WLChatMessage fromComponent(Component component, UUID sender) {
+
         TextComponent textComponent = (TextComponent) component;
         String rawContent = textComponent.content();
         boolean global = rawContent.startsWith("!");
@@ -21,6 +22,6 @@ public class ChatMessageFactory {
             rawContent = rawContent.substring(1);
         }
 
-        return new WLChatMessage(true, textComponent.content(rawContent), sender, nameService.getDisplayName(sender));
+        return new WLChatMessage(global, textComponent.content(rawContent), sender, nameService.getDisplayName(sender));
     }
 }

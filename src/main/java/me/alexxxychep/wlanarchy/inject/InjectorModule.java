@@ -2,6 +2,7 @@ package me.alexxxychep.wlanarchy.inject;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+
 import me.alexxxychep.wlanarchy.WLAnarchy;
 import me.alexxxychep.wlanarchy.auth.AuthenticationService;
 import me.alexxxychep.wlanarchy.chat.ChatListener;
@@ -11,6 +12,7 @@ import me.alexxxychep.wlanarchy.listeners.PlayerRegisterListener;
 import me.alexxxychep.wlanarchy.player.NameService;
 import me.alexxxychep.wlanarchy.ranks.RankService;
 import me.alexxxychep.wlanarchy.ranks.WLPlayerRankDao;
+
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class InjectorModule extends AbstractModule {

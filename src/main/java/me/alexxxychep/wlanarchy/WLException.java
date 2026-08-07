@@ -3,7 +3,7 @@ package me.alexxxychep.wlanarchy;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WLException extends Exception {
+public class WLException extends RuntimeException {
     private final Map<String, String> context = new HashMap<>();
 
     public WLException(String message, Throwable cause) {

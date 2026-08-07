@@ -2,7 +2,6 @@ package me.alexxxychep.wlanarchy.chat;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.internal.InternalFlags;
 import io.papermc.paper.event.player.AsyncChatDecorateEvent;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import me.alexxxychep.wlanarchy.auth.AuthenticationService;
@@ -11,8 +10,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
